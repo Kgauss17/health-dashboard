@@ -1,0 +1,77 @@
+.axis-nav{
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.axis-btn{
+  border: 1px solid var(--bd, rgba(15,23,42,.15));
+  background: var(--surface-strong, #ffffff);
+  color: var(--txt, #111827);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  margin: 0;
+}
+.axis-btn:hover{
+  background: var(--surface, #f8fafc);
+}
+.axis-btn:focus-visible{
+  outline: 2px solid var(--accent, #2563eb);
+  outline-offset: 2px;
+}
+.axis-btn.active,
+.axis-btn.is-active,
+.axis-btn[aria-current="page"]{
+  background: var(--accent, #2563eb);
+  color: #ffffff;
+  border-color: var(--accent, #2563eb);
+}
+
+/* Module frame styles are now defined inline in index.html for hub isolation */
+
+html, body{
+  height: 100%;
+}
+
+body{
+  margin: 0;
+  overflow: hidden;
+}
+
+.app{
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.app-content{
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 800px){
+  .axis-nav{ gap: 4px; }
+  .axis-btn{
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}

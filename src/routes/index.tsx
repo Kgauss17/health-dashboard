@@ -1,26 +1,38 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "Tableau de Bord SIG — Province de Figuig" },
+      {
+        name: "description",
+        content:
+          "Tableau de bord interactif SIG de la Province de Figuig — axe Santé : carte, indicateurs et établissements de santé.",
+      },
+    ],
+  }),
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
+function Index() {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.location.replace("/app/index.html#sante");
+    }
+  }, []);
+
   return (
     <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        fontFamily: "system-ui, sans-serif",
+        color: "#475569",
+      }}
     >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+      <p>Chargement du tableau de bord…</p>
     </div>
   );
-}
-
-function Index() {
-  return <PlaceholderIndex />;
 }

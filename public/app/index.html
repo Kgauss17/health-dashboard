@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Carte Interactive de la Province de Figuig</title>
+
+  <!-- Styles d'origine (axes) -->
+  <link href="css/tokens.css" rel="stylesheet" />
+  <link href="css/base.css" rel="stylesheet" />
+  <link href="css/dashboard.css" rel="stylesheet" />
+  <link href="css/shell.css" rel="stylesheet" />
+  <style>
+    html, body { 
+      height: 100%; 
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    body { 
+      margin: 0; 
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .app { 
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden;
+    }
+    .header { 
+      position: sticky; 
+      top: 0; 
+      z-index: 3000; 
+      flex: 0 0 auto;
+      background: var(--surface-strong, #ffffff);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .app-content { 
+      flex: 1 1 auto; 
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .module-host {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .module-frame { 
+      width: 100%; 
+      height: 100%;
+      min-height: 0;
+      border: 0; 
+      display: block;
+      background: transparent;
+      flex: 1;
+    }
+    .axis-nav .axis-btn { text-decoration: none; cursor: pointer; }
+  </style>
+
+</head>
+<body>
+  <div class="app">
+<header class="header">
+<div class="header-left">
+<img alt="Logo Ministère" class="logo" onerror="this.style.display='none'" src="assets/logos/ministere.png"/>
+<div class="title">Tableau de Bord SIG - Province de Figuig</div>
+</div>
+<div class="header-center">
+<nav class="axis-nav" aria-label="Axes du dashboard">
+<a class='axis-btn' data-axis='presentation' href='/app/modules/presentation/'>Présentation</a>
+<a class='axis-btn' data-axis='socioeco' href='/app/modules/socioeco/'>D&eacute;mographie</a>
+<a class='axis-btn' data-axis='electricite' href='/app/modules/electricite/'>Emploi &amp; &Eacute;conomie</a>
+<a class='axis-btn' data-axis='sante' href='/app/modules/sante/'>Sant&eacute;</a>
+<a class='axis-btn' data-axis='education' href='/app/modules/education/'>Éducation</a>
+<a class='axis-btn' data-axis='aep_assainissement' href='/app/modules/aep_assainissement/'>Eau</a>
+<a class='axis-btn' data-axis='voirie' href='/app/modules/voirie/'>Mise &agrave; niveau</a>
+<a class='axis-btn' data-axis='pdti' href='/app/modules/pdti/'>PDTI-Plan d'action 2026</a>
+</nav>
+</div>
+<div class="header-right">
+<img alt="Logo Maroc" class="logo" onerror="this.style.display='none'" src="assets/logos/maroc.png"/>
+</div>
+</header>
+    <!-- Page volontairement vidée : header uniquement -->
+    <main id="appContent" class="app-content" aria-label="Contenu du dashboard">
+      <div id="moduleHost" class="module-host">
+        <iframe id="moduleFrame" class="module-frame" title="Axe du dashboard" src="modules/sante/index.html" loading="eager"></iframe>
+      </div>
+    </main>
+  </div>
+
+<script>
+(function(){
+  const routes = {
+    presentation: "modules/presentation/index.html",
+    socioeco: "modules/socioeco/index.html",
+    sante: "modules/sante/index.html",
+    education: "modules/education/index.html",
+    aep_assainissement: "modules/aep_assainissement/index.html",
+    electricite: "modules/electricite/index.html",
+    voirie: "modules/voirie/index.html",
+    pdti: "modules/pdti/index.html"
+  };
+
+  const nav = document.querySelector('.axis-nav');
+  const moduleFrame = document.getElementById('moduleFrame');
+  const moduleHost = document.getElementById('moduleHost');
+
+  function setActive(key){
+    if(!nav) return;
+    nav.querySelectorAll('.axis-btn').forEach(btn => btn.classList.remove('is-active'));
+    const active = nav.querySelector(`.axis-btn[data-axis="${key}"]`) || nav.querySelector('.axis-btn[data-axis="socioeco"]');
+    if(active) active.classList.add('is-active');
+  }
+
+  // Variable pour éviter les messages en boucle
+  let currentAxisMessageTimer = null;
+  let currentAxisSrc = null;
+
+  function setAxis(axisName) {
+    if (!routes[axisName]) {
+      console.warn('Axe inconnu:', axisName, '- bascule vers socioeco');
+      axisName = 'sante';
+    }
+    const target = routes[axisName];
+    if (!moduleFrame) return;
+    
+    // Fonction pour envoyer le message HUB:VISIBLE (une seule fois par changement d'axe)
+    function sendVisibilityMessage() {
+      // Annuler tout timer en attente
+      if (currentAxisMessageTimer) {
+        clearTimeout(currentAxisMessageTimer);
+        currentAxisMessageTimer = null;
+      }
+      
+      if (!moduleFrame || !moduleFrame.contentWindow) return;
+      
+      // Envoyer le message
+      moduleFrame.contentWindow.postMessage({ type: 'HUB:VISIBLE' }, '*');
+    }
+    
+    const srcChanged = moduleFrame.getAttribute('src') !== target;
+    
+    if (srcChanged) {
+      // Changement d'axe : charger le nouveau module
+      currentAxisSrc = target;
+      moduleFrame.setAttribute('src', target);
+      
+      // Annuler tout message en attente du changement précédent
+      if (currentAxisMessageTimer) {
+        clearTimeout(currentAxisMessageTimer);
+      }
+      
+      // Envoyer le message après chargement de l'iframe (délai 300ms)
+      moduleFrame.addEventListener('load', function onLoad() {
+        moduleFrame.removeEventListener('load', onLoad);
+        // S'assurer que c'est toujours le bon axe (pas un autre changement entre-temps)
+        if (moduleFrame.getAttribute('src') === currentAxisSrc) {
+          currentAxisMessageTimer = setTimeout(sendVisibilityMessage, 300);
+        }
+      }, { once: true });
+      
+      // Fallback: si l'iframe est déjà chargé (cache), envoyer après 300ms
+      if (moduleFrame.contentDocument && moduleFrame.contentDocument.readyState === 'complete') {
+        currentAxisMessageTimer = setTimeout(function() {
+          if (moduleFrame.getAttribute('src') === currentAxisSrc) {
+            sendVisibilityMessage();
+          }
+        }, 300);
+      }
+    } else {
+      // Même axe déjà chargé : envoyer le message une fois (après petit délai)
+      if (currentAxisMessageTimer) {
+        clearTimeout(currentAxisMessageTimer);
+      }
+      currentAxisMessageTimer = setTimeout(sendVisibilityMessage, 50);
+    }
+    
+    setActive(axisName);
+  }
+
+  function loadFromHash(){
+    let key = (location.hash || '#sante').replace('#','').trim();
+    if (!routes[key]){
+      console.warn('Route inconnue:', key, '- bascule vers socioeco');
+      key = 'sante';
+      if (location.hash !== '#sante'){
+        history.replaceState(null, "", '#sante');
+      }
+    }
+    setAxis(key);
+  }
+
+  if(nav){
+    nav.addEventListener('click', (evt) => {
+      const anchor = evt.target.closest('.axis-btn');
+      if(!anchor) return;
+      
+      // Si le bouton n'a pas d'attribut data-axis, c'est le bouton PDF, géré séparément
+      const key = anchor.getAttribute('data-axis');
+      if(!key) return; // Le bouton PDF est géré par le gestionnaire ci-dessus
+      
+      evt.preventDefault();
+      if(location.hash.replace('#','') !== key){
+        location.hash = key;
+      } else {
+        loadFromHash();
+      }
+    });
+  }
+
+  window.addEventListener('hashchange', loadFromHash);
+  loadFromHash();
+})();
+</script>
+</body>
+</html>
