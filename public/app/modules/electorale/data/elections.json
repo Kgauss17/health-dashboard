@@ -1,0 +1,80 @@
+{
+  "Bni Tadjite": {
+    "nom_ar": "بني تدجيت",
+    "bureaux": 32,
+    "electeurs": 7429,
+    "circonscriptions": 23
+  },
+  "Bni Guil": {
+    "nom_ar": "بني كيل",
+    "bureaux": 18,
+    "electeurs": 5874,
+    "circonscriptions": 13
+  },
+  "Bouchaouene": {
+    "nom_ar": "بوشاون",
+    "bureaux": 19,
+    "electeurs": 7228,
+    "circonscriptions": 15
+  },
+  "Bouarfa (Mun.)": {
+    "nom_ar": "بوعرفة",
+    "bureaux": 31,
+    "electeurs": 14790,
+    "circonscriptions": 25
+  },
+  "Bouanane": {
+    "nom_ar": "بوعنان",
+    "bureaux": 20,
+    "electeurs": 5848,
+    "circonscriptions": 13
+  },
+  "Boumerieme": {
+    "nom_ar": "بومريم",
+    "bureaux": 14,
+    "electeurs": 5121,
+    "circonscriptions": 13
+  },
+  "Talsint": {
+    "nom_ar": "تالسينت",
+    "bureaux": 26,
+    "electeurs": 10811,
+    "circonscriptions": 23
+  },
+  "Tendrara": {
+    "nom_ar": "تندرارة",
+    "bureaux": 23,
+    "electeurs": 8981,
+    "circonscriptions": 23
+  },
+  "Abbou Lakhal": {
+    "nom_ar": "عبو لكحل",
+    "bureaux": 11,
+    "electeurs": 1527,
+    "circonscriptions": 11
+  },
+  "Ain Chair": {
+    "nom_ar": "عين الشعير",
+    "bureaux": 11,
+    "electeurs": 1084,
+    "circonscriptions": 11
+  },
+  "Ain Chouater": {
+    "nom_ar": "عين الشواطر",
+    "bureaux": 11,
+    "electeurs": 795,
+    "circonscriptions": 11
+  },
+  "Figuig (Mun.)": {
+    "nom_ar": "فجيج",
+    "bureaux": 13,
+    "electeurs": 7182,
+    "circonscriptions": 13
+  },
+  "Maatarka": {
+    "nom_ar": "معتركة",
+    "bureaux": 16,
+    "electeurs": 7706,
+    "circonscriptions": 13
+  }
+}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Carte Électorale — Province de Figuig</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
+<script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="card stat-card">
+      <div class="card-head"><span class="card-title">Statistiques Globales</span><span class="badge">Élections</span></div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Électeurs (Province)</div><div class="kpi-value" id="kpiElecteurs">—</div></div>
+        <div class="kpi"><div class="kpi-label">Bureaux de vote</div><div class="kpi-value" id="kpiBureaux">—</div></div>
+        <div class="kpi"><div class="kpi-label">Circonscriptions</div><div class="kpi-value" id="kpiCircons">—</div></div>
+        <div class="kpi"><div class="kpi-label">Communes</div><div class="kpi-value" id="kpiCommunes">—</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Indicateurs commune</span></div>
+      <div class="commune-name" id="communeName">—</div>
+      <input id="communeSearch" class="search" type="search" placeholder="Rechercher une commune…" list="communeList" />
+      <datalist id="communeList"></datalist>
+      <div class="commune-kpis" id="communeKpis"></div>
+    </div>
+  </aside>
+
+  <section class="main">
+    <div id="map"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <aside class="rightpanel">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Indicateur</span></div>
+      <select id="indicatorSelect">
+        <option value="electeurs">Nombre d'électeurs</option>
+        <option value="bureaux">Bureaux de vote</option>
+        <option value="circonscriptions">Circonscriptions</option>
+      </select>
+      <p class="hint">Cliquez une commune pour voir le détail. Cliquez une classe de la légende pour filtrer.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title" id="rankingTitle">Classement des communes</span><button class="iconbtn" id="sortToggle" title="Tri">⇅</button></div>
+      <div class="chart-wrap"><canvas id="rankingChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Répartition par commune</span></div>
+      <div class="chart-wrap small"><canvas id="pieChart"></canvas></div>
+    </div>
+  </aside>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

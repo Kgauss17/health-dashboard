@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   useEffect(() => {
     if (typeof window !== "undefined") {
-      window.location.replace("/app/index.html#sante");
+      window.location.replace("/app/index.html#electorale");
     }
   }, []);
 
