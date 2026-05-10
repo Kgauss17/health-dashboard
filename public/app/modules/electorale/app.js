@@ -4,7 +4,7 @@
     bureaux:          { label: "Bureaux de vote",      short: "Bureaux",         fmt: (v)=>v.toLocaleString('fr-FR') },
     circonscriptions: { label: "Circonscriptions",     short: "Circonscriptions",fmt: (v)=>v.toLocaleString('fr-FR') },
   };
-  const PALETTE = ['#fee5d9','#fcae91','#fb6a4a','#de2d26','#a50f15'];
+  const PALETTE = ['#F4A89A','#F8C9A8','#A8D5E2','#7FCFB5','#5BA8C9'];
   const CLASS_LABELS = ['Très faible','Faible','Moyen','Élevé','Très élevé'];
 
   const $ = (id) => document.getElementById(id);
@@ -48,22 +48,36 @@
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }),
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '&copy; Esri' })
   ]);
-  const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    maxZoom: 17, attribution: '&copy; OpenStreetMap, SRTM | &copy; OpenTopoMap (CC-BY-SA)'
+  // Topographique haute qualité: relief Esri + topo + labels
+  const reliefHD = L.layerGroup([
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', { maxZoom: 13 }),
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, opacity: 0.85, attribution: 'Tiles &copy; Esri — Topo & Relief' })
+  ]);
+  const topoEsri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19, attribution: 'Tiles &copy; Esri — Topographic'
+  });
+  const topoOSM = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    maxZoom: 17, subdomains: 'abc', attribution: '&copy; OpenStreetMap, SRTM | &copy; OpenTopoMap (CC-BY-SA)'
+  });
+  const natgeo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16, attribution: 'Tiles &copy; Esri — NatGeo'
   });
   const cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
     maxZoom: 19, attribution: '&copy; OSM &copy; CARTO'
   });
 
-  osm.addTo(map);
+  reliefHD.addTo(map);
 
   L.control.layers({
-    'Plan (OSM)': osm,
+    'Relief HD (recommandé)': reliefHD,
+    'Topographique (Esri)': topoEsri,
+    'Topographique (OpenTopo)': topoOSM,
+    'NatGeo': natgeo,
     'Satellite': satellite,
     'Satellite + labels': satelliteLabels,
-    'Topographique': topo,
+    'Plan (OSM)': osm,
     'Clair (Carto)': cartoLight
-  }, {}, { position: 'topright', collapsed: false }).addTo(map);
+  }, {}, { position: 'topright', collapsed: true }).addTo(map);
 
   let geoLayer = null;
   let chefLayer = null;
