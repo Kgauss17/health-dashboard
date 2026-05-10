@@ -1,51 +1,286 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Carte Électorale — Province de Figuig</title>
-  <style>
-    html,body{height:100%;margin:0;padding:0;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f4f6fa;color:#0f172a}
-    .app{height:100vh;display:flex;flex-direction:column}
-    .header{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.06);z-index:10}
-    .header-left,.header-right{display:flex;align-items:center;gap:12px}
-    .logo{height:38px;width:auto}
-    .title{font-weight:700;font-size:16px;color:#0f172a}
-    .subtitle{font-size:11px;color:#64748b;margin-top:2px}
-    .axis-nav{display:flex;gap:6px}
-    .axis-btn{padding:8px 16px;border-radius:999px;text-decoration:none;color:#475569;font-size:13px;font-weight:500;background:#f1f5f9;transition:all .15s;cursor:pointer;border:0}
-    .axis-btn:hover{background:#e2e8f0}
-    .axis-btn.is-active{background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
-    .module-host{flex:1;min-height:0;overflow:hidden;position:relative}
-    .module-frame{width:100%;height:100%;border:0;display:block;background:transparent}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Carte Électorale — Province de Figuig</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="modules/electorale/matrix_style.css">
+<style>
+  :root{
+    --alte-sidebar:#343a40; --alte-sidebar-2:#212529; --alte-accent:#0d6efd;
+    --alte-bg:#f4f6f9; --alte-text:#c2c7d0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:'Source Sans Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--alte-bg);color:#212529}
+  .wrapper{display:flex;min-height:100vh;flex-direction:column}
+  .layout{display:flex;flex:1;min-height:0}
+
+  /* Sidebar */
+  .sidebar{width:250px;background:var(--alte-sidebar);color:var(--alte-text);display:flex;flex-direction:column;flex:0 0 250px;transition:flex-basis .25s,width .25s}
+  .sidebar.collapsed{flex-basis:60px;width:60px}
+  .sidebar.collapsed .brand-text,.sidebar.collapsed .nav-link span,.sidebar.collapsed .nav-header,.sidebar.collapsed .user-info{display:none}
+  .sidebar-brand{display:flex;align-items:center;gap:10px;padding:14px 16px;background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.06);color:#fff;font-weight:700;font-size:16px}
+  .sidebar-brand .bi{font-size:22px;color:#ffc107}
+  .user-panel{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .user-panel .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d6efd,#0dcaf0);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  .user-info b{color:#fff;display:block;font-size:13px}
+  .user-info small{color:#90a4ae;font-size:11px}
+  .nav-sidebar{list-style:none;padding:8px 0;margin:0;flex:1;overflow:auto}
+  .nav-header{padding:10px 16px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#90a4ae}
+  .nav-sidebar .nav-link{display:flex;align-items:center;gap:12px;padding:9px 16px;color:var(--alte-text);text-decoration:none;border-left:3px solid transparent;font-size:14px;transition:background .15s}
+  .nav-sidebar .nav-link .bi{font-size:18px;width:22px;text-align:center}
+  .nav-sidebar .nav-link:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav-sidebar .nav-link.active{background:var(--alte-accent);color:#fff;border-left-color:#ffc107}
+  .nav-sidebar .badge{margin-left:auto;font-size:10px}
+
+  /* Main */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{height:56px;background:#fff;display:flex;align-items:center;padding:0 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);gap:14px;position:sticky;top:0;z-index:20}
+  .topbar .toggler{background:none;border:0;font-size:20px;color:#495057;cursor:pointer}
+  .topbar .title{font-weight:600;color:#343a40}
+  .topbar .subtitle{font-size:12px;color:#6c757d;margin-left:6px}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .topbar-right .logo{height:34px}
+
+  .content{padding:18px;flex:1;overflow:auto}
+  .content-header{margin:0 0 14px;display:flex;justify-content:space-between;align-items:center}
+  .content-header h1{font-size:20px;margin:0;color:#343a40;font-weight:600}
+  .breadcrumb{font-size:12px;color:#6c757d}
+
+  /* Small boxes (AdminLTE) */
+  .small-box{border-radius:8px;color:#fff;position:relative;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:108px;display:flex;flex-direction:column;justify-content:center;padding:18px 20px}
+  .small-box .sb-num{font-size:34px;font-weight:700;line-height:1.1}
+  .small-box .sb-label{font-size:13px;font-weight:600;opacity:.95;margin-top:2px}
+  .small-box .sb-icon{position:absolute;right:12px;top:10px;font-size:64px;opacity:.25}
+  .small-box .sb-foot{margin-top:auto;font-size:11px;background:rgba(0,0,0,.12);margin:14px -20px -18px;padding:6px 20px;display:flex;align-items:center;gap:6px}
+  .bg-info-grad{background:linear-gradient(135deg,#0dcaf0,#0d6efd)}
+  .bg-success-grad{background:linear-gradient(135deg,#20c997,#198754)}
+  .bg-warning-grad{background:linear-gradient(135deg,#ffc107,#fd7e14);color:#212529}
+  .bg-warning-grad .sb-foot{background:rgba(0,0,0,.08)}
+  .bg-danger-grad{background:linear-gradient(135deg,#fd7e14,#dc3545)}
+
+  /* Cards */
+  .card-alte{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:18px;overflow:hidden}
+  .card-alte .card-header{padding:12px 18px;border-bottom:1px solid #e9ecef;display:flex;align-items:center;gap:10px;background:#fff}
+  .card-alte .card-header h3{font-size:15px;margin:0;font-weight:600;color:#343a40}
+  .card-alte .card-header .bi{color:var(--alte-accent)}
+  .card-alte .card-body{padding:0}
+  .card-alte .card-body.padded{padding:16px}
+  .map-card .card-body{height:560px;position:relative}
+  .map-card iframe{width:100%;height:100%;border:0;display:block}
+
+  /* Footer */
+  .footer{background:#fff;border-top:1px solid #e9ecef;padding:12px 20px;font-size:13px;color:#6c757d;display:flex;justify-content:space-between}
+  .footer b{color:#343a40}
+
+  /* Matrix DataTable wrapper - tame the imported table styles */
+  #matrixWrap{overflow:auto;padding:14px}
+  #matrixWrap table{font-size:11px}
+  .dataTables_wrapper .dataTables_filter input{border:1px solid #ced4da;border-radius:6px;padding:4px 10px;margin-left:6px}
+  .dataTables_wrapper .dataTables_length select{border:1px solid #ced4da;border-radius:6px;padding:2px 6px}
+
+  @media (max-width: 900px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:1050;transform:translateX(-100%);transition:transform .25s;flex-basis:250px;width:250px}
+    .sidebar.show{transform:none}
+  }
+</style>
 </head>
 <body>
-  <div class="app">
-    <header class="header">
-      <div class="header-left">
-        <img class="logo" src="assets/logos/ministere.png" alt="Ministère" onerror="this.style.display='none'"/>
-        <div>
-          <div class="title">Tableau de Bord Électoral — Province de Figuig</div>
-          <div class="subtitle">Carte interactive des bureaux de vote, électeurs et circonscriptions</div>
+<div class="wrapper">
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <i class="bi bi-geo-alt-fill"></i>
+        <span class="brand-text">Figuig Élections</span>
+      </div>
+      <div class="user-panel">
+        <div class="avatar">FG</div>
+        <div class="user-info">
+          <b>Province Figuig</b>
+          <small>Tableau de bord</small>
         </div>
       </div>
-      <nav class="axis-nav">
-        <a class="axis-btn is-active" data-axis="electorale" href="#electorale">Élections</a>
-      </nav>
-      <div class="header-right">
-        <img class="logo" src="assets/logos/maroc.png" alt="Maroc" onerror="this.style.display='none'"/>
-      </div>
-    </header>
-    <main class="module-host">
-      <iframe id="moduleFrame" class="module-frame" title="Carte électorale" src="modules/electorale/index.html"></iframe>
-    </main>
+      <ul class="nav-sidebar">
+        <li class="nav-header">NAVIGATION</li>
+        <li><a class="nav-link active" href="#electorale"><i class="bi bi-map"></i><span>Carte Électorale</span></a></li>
+        <li><a class="nav-link" href="#stats"><i class="bi bi-bar-chart-fill"></i><span>Statistiques</span><span class="badge bg-info">live</span></a></li>
+        <li><a class="nav-link" href="#matrix"><i class="bi bi-grid-3x3"></i><span>Matrice BV</span></a></li>
+        <li class="nav-header">DONNÉES</li>
+        <li><a class="nav-link" href="#communes"><i class="bi bi-buildings"></i><span>Communes</span><span class="badge bg-secondary">13</span></a></li>
+        <li><a class="nav-link" href="#bureaux"><i class="bi bi-building-check"></i><span>Bureaux de vote</span><span class="badge bg-warning text-dark">245</span></a></li>
+        <li><a class="nav-link" href="#circ"><i class="bi bi-diagram-3"></i><span>Circonscriptions</span></a></li>
+        <li class="nav-header">SYSTÈME</li>
+        <li><a class="nav-link" href="#"><i class="bi bi-download"></i><span>Exporter</span></a></li>
+        <li><a class="nav-link" href="#"><i class="bi bi-gear"></i><span>Paramètres</span></a></li>
+      </ul>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <header class="topbar">
+        <button class="toggler" id="sidebarToggle" aria-label="Toggle sidebar"><i class="bi bi-list"></i></button>
+        <div>
+          <span class="title">Tableau de Bord Électoral</span>
+          <span class="subtitle">— Province de Figuig</span>
+        </div>
+        <div class="topbar-right">
+          <span class="badge bg-success"><i class="bi bi-circle-fill" style="font-size:7px"></i> En ligne</span>
+          <img class="logo" src="assets/logos/maroc.png" alt="Maroc" onerror="this.style.display='none'">
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="content-header">
+          <h1>Vue d'ensemble</h1>
+          <div class="breadcrumb"><i class="bi bi-house-door"></i> Accueil / Élections / Vue d'ensemble</div>
+        </div>
+
+        <!-- KPI small-boxes -->
+        <div class="row g-3" id="stats">
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="small-box bg-info-grad">
+              <div class="sb-num" id="kpiE">84 376</div>
+              <div class="sb-label">Électeurs inscrits</div>
+              <i class="bi bi-people-fill sb-icon"></i>
+              <div class="sb-foot"><i class="bi bi-arrow-up-right"></i> Province de Figuig</div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="small-box bg-success-grad">
+              <div class="sb-num" id="kpiB">245</div>
+              <div class="sb-label">Bureaux de vote</div>
+              <i class="bi bi-building-check sb-icon"></i>
+              <div class="sb-foot"><i class="bi bi-geo"></i> Répartis sur 13 communes</div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="small-box bg-warning-grad">
+              <div class="sb-num" id="kpiC">207</div>
+              <div class="sb-label">Circonscriptions</div>
+              <i class="bi bi-diagram-3-fill sb-icon"></i>
+              <div class="sb-foot"><i class="bi bi-pin-map"></i> Découpage électoral</div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="small-box bg-danger-grad">
+              <div class="sb-num">13</div>
+              <div class="sb-label">Communes</div>
+              <i class="bi bi-buildings-fill sb-icon"></i>
+              <div class="sb-foot"><i class="bi bi-map"></i> Province couverte</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map -->
+        <div class="card-alte map-card mt-3">
+          <div class="card-header">
+            <i class="bi bi-map-fill"></i>
+            <h3>Carte interactive — Communes & indicateurs électoraux</h3>
+            <span class="badge bg-info ms-auto">Leaflet</span>
+          </div>
+          <div class="card-body">
+            <iframe id="moduleFrame" title="Carte électorale" src="modules/electorale/index.html"></iframe>
+          </div>
+        </div>
+
+        <!-- Matrix DataTable -->
+        <div class="card-alte" id="matrix">
+          <div class="card-header">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+            <h3>Matrice — Électeurs par Bureau de Vote &amp; Circonscription</h3>
+            <span class="badge bg-warning text-dark ms-auto">Données détaillées</span>
+          </div>
+          <div class="card-body">
+            <div id="matrixWrap"><div class="text-center text-muted p-4"><i class="bi bi-hourglass-split"></i> Chargement de la matrice…</div></div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <div>© 2026 <b>Province de Figuig</b> — Tableau de bord électoral.</div>
+        <div>Version <b>4.0</b> • Powered by Lovable</div>
+      </footer>
+    </div>
   </div>
-  <script>
-    const frame = document.getElementById('moduleFrame');
-    frame.addEventListener('load', () => {
-      setTimeout(() => { try { frame.contentWindow.postMessage({type:'HUB:VISIBLE'}, '*'); } catch(e){} }, 200);
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  // Sidebar toggle
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    if (window.matchMedia('(max-width:900px)').matches) sidebar.classList.toggle('show');
+    else sidebar.classList.toggle('collapsed');
+  });
+
+  // Iframe map: notify on load
+  const frame = document.getElementById('moduleFrame');
+  frame.addEventListener('load', () => {
+    setTimeout(() => { try { frame.contentWindow.postMessage({type:'HUB:VISIBLE'}, '*'); } catch(e){} }, 200);
+  });
+
+  // Sidebar nav scroll-spy-ish
+  document.querySelectorAll('.nav-sidebar .nav-link').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const href = a.getAttribute('href');
+      if (href && href.startsWith('#') && href.length > 1) {
+        const t = document.getElementById(href.slice(1));
+        if (t) {
+          e.preventDefault();
+          document.querySelectorAll('.nav-sidebar .nav-link').forEach(x=>x.classList.remove('active'));
+          a.classList.add('active');
+          t.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      }
     });
-  </script>
+  });
+
+  // Load matrix table and init DataTables
+  fetch('modules/electorale/matrix_table.html')
+    .then(r => r.text())
+    .then(html => {
+      const wrap = document.getElementById('matrixWrap');
+      wrap.innerHTML = html;
+      const tbl = wrap.querySelector('table');
+      if (!tbl) return;
+      tbl.id = 'matrixTable';
+      tbl.classList.add('display','nowrap');
+      // DataTables needs proper thead/tbody. Wrap if needed.
+      if (!tbl.querySelector('thead')) {
+        const rows = Array.from(tbl.querySelectorAll('tr'));
+        const thead = document.createElement('thead');
+        const tbody = document.createElement('tbody');
+        // First 2 rows -> thead
+        rows.slice(0,2).forEach(r => thead.appendChild(r));
+        rows.slice(2).forEach(r => tbody.appendChild(r));
+        tbl.innerHTML = '';
+        tbl.appendChild(thead); tbl.appendChild(tbody);
+      }
+      try {
+        $('#matrixTable').DataTable({
+          paging: true, pageLength: 10, lengthMenu:[[5,10,25,-1],[5,10,25,'Tous']],
+          searching: true, info: true, ordering: true, scrollX: true,
+          language: {
+            search: 'Rechercher :', lengthMenu: 'Afficher _MENU_ entrées',
+            info: 'Affichage _START_ à _END_ sur _TOTAL_ entrées',
+            paginate: { first:'Début', previous:'Précédent', next:'Suivant', last:'Fin' },
+            emptyTable: 'Aucune donnée', zeroRecords: 'Aucun résultat'
+          }
+        });
+      } catch(err) { console.warn('DataTable init failed', err); }
+    })
+    .catch(err => {
+      document.getElementById('matrixWrap').innerHTML =
+        '<div class="alert alert-warning m-3">Impossible de charger la matrice.</div>';
+      console.error(err);
+    });
+</script>
 </body>
 </html>
