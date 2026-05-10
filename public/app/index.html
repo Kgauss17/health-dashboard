@@ -229,6 +229,22 @@
     else sidebar.classList.toggle('collapsed');
   });
 
+  // Logout
+  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    try { sessionStorage.removeItem('figuig_auth'); localStorage.removeItem('figuig_auth'); sessionStorage.removeItem('figuig_user'); } catch(_){}
+    window.location.replace('login.html');
+  });
+
+  // Show logged-in user in topbar/avatar
+  try {
+    const u = sessionStorage.getItem('figuig_user');
+    if (u) {
+      const av = document.querySelector('.user-panel .avatar');
+      if (av) av.textContent = u.slice(0,2).toUpperCase();
+    }
+  } catch(_){}
+
   // Iframe map: notify on load
   const frame = document.getElementById('moduleFrame');
   frame.addEventListener('load', () => {
