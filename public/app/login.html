@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Connexion — Figuig Élections</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+  html,body{height:100%;margin:0;font-family:'Source Sans Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  body{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(1200px 600px at 10% 10%, rgba(13,110,253,.18), transparent 60%),
+      radial-gradient(1000px 500px at 90% 90%, rgba(255,193,7,.18), transparent 60%),
+      linear-gradient(135deg,#212529,#343a40);
+    color:#212529;
+  }
+  .login-box{width:100%;max-width:400px;padding:18px}
+  .login-logo{text-align:center;color:#fff;margin-bottom:18px;font-size:24px;font-weight:700;letter-spacing:.3px}
+  .login-logo .bi{color:#ffc107;margin-right:6px}
+  .login-logo small{display:block;font-size:12px;font-weight:400;color:#adb5bd;margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
+  .card{border:0;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden}
+  .card-header{background:#fff;border-bottom:1px solid #e9ecef;padding:18px 22px}
+  .card-header h5{margin:0;font-weight:600;color:#343a40;font-size:16px}
+  .card-header p{margin:2px 0 0;font-size:12px;color:#6c757d}
+  .card-body{padding:22px}
+  .form-control{border-radius:6px;padding:10px 12px}
+  .input-group-text{background:#f8f9fa;border-right:0}
+  .input-group .form-control{border-left:0}
+  .btn-login{background:linear-gradient(135deg,#0d6efd,#0dcaf0);border:0;color:#fff;font-weight:600;padding:10px;border-radius:6px;width:100%;transition:filter .15s}
+  .btn-login:hover{filter:brightness(1.08);color:#fff}
+  .form-check-label{font-size:13px;color:#495057}
+  .login-footer{text-align:center;color:#adb5bd;font-size:12px;margin-top:14px}
+  .alert{font-size:13px;padding:8px 12px;margin-bottom:12px}
+  .hint{font-size:11px;color:#6c757d;text-align:center;margin-top:10px;background:#f8f9fa;padding:6px;border-radius:6px;border:1px dashed #ced4da}
+  .hint code{color:#d63384}
+</style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="login-logo">
+      <i class="bi bi-geo-alt-fill"></i>Figuig Élections
+      <small>Province de Figuig — Tableau de bord</small>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h5>Connexion à l'espace administrateur</h5>
+        <p>Veuillez saisir vos identifiants pour continuer</p>
+      </div>
+      <div class="card-body">
+        <div id="errBox" class="alert alert-danger d-none" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i> Identifiants incorrects.
+        </div>
+        <form id="loginForm" autocomplete="off">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Nom d'utilisateur</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" id="username" class="form-control" placeholder="admin" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Mot de passe</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" id="password" class="form-control" placeholder="••••••" required>
+              <span class="input-group-text" style="cursor:pointer" id="togglePwd"><i class="bi bi-eye"></i></span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="remember">
+              <label class="form-check-label" for="remember">Se souvenir de moi</label>
+            </div>
+            <a href="#" class="small text-decoration-none">Mot de passe oublié ?</a>
+          </div>
+          <button type="submit" class="btn-login">
+            <i class="bi bi-box-arrow-in-right"></i> Se connecter
+          </button>
+        </form>
+        <div class="hint">
+          <i class="bi bi-info-circle"></i> Démo : <code>admin</code> / <code>admin</code>
+        </div>
+      </div>
+    </div>
+    <div class="login-footer">© 2026 Province de Figuig — v4.0</div>
+  </div>
+
+<script>
+  // If already authenticated, go straight to the app
+  try {
+    if (sessionStorage.getItem('figuig_auth') === '1' || localStorage.getItem('figuig_auth') === '1') {
+      window.location.replace('index.html#electorale');
+    }
+  } catch(e){}
+
+  const pwd = document.getElementById('password');
+  document.getElementById('togglePwd').addEventListener('click', () => {
+    pwd.type = pwd.type === 'password' ? 'text' : 'password';
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const u = document.getElementById('username').value.trim();
+    const p = pwd.value;
+    const remember = document.getElementById('remember').checked;
+    const err = document.getElementById('errBox');
+    if (u === 'admin' && p === 'admin') {
+      err.classList.add('d-none');
+      try {
+        sessionStorage.setItem('figuig_auth','1');
+        sessionStorage.setItem('figuig_user', u);
+        if (remember) localStorage.setItem('figuig_auth','1');
+      } catch(e){}
+      window.location.replace('index.html#electorale');
+    } else {
+      err.classList.remove('d-none');
+    }
+  });
+</script>
+</body>
+</html>
