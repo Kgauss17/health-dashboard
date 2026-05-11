@@ -259,8 +259,24 @@
     }
   });
 
-  // iframe resize compat
-  window.addEventListener('message', (e) => { if (e.data?.type==='HUB:VISIBLE'){ setTimeout(()=> map.invalidateSize(), 100); }});
+  // iframe resize compat + injection des données électeurs depuis le parent
+  window.addEventListener('message', (e) => {
+    if (e.data?.type==='HUB:VISIBLE'){ setTimeout(()=> map.invalidateSize(), 100); }
+    if (e.data?.type==='ELECTEURS:AGG' && e.data.payload){
+      const agg = e.data.payload;
+      // Remplace les valeurs des communes avec les agrégats locaux
+      geo.features.forEach(f => {
+        const a = agg[f.properties.nom_commun];
+        if (a){
+          f.properties.electeurs = a.electeurs;
+          f.properties.bureaux = a.bureaux;
+          f.properties.circonscriptions = a.circonscriptions;
+        }
+      });
+      rebuildMap();
+      updateAll();
+    }
+  });
 
   buildSearchList();
   rebuildMap();

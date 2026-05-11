@@ -90,6 +90,21 @@
   .dataTables_wrapper .dataTables_filter input{border:1px solid #ced4da;border-radius:6px;padding:4px 10px;margin-left:6px}
   .dataTables_wrapper .dataTables_length select{border:1px solid #ced4da;border-radius:6px;padding:2px 6px}
 
+  /* Électeurs - DataTable RTL */
+  .electeurs-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;background:#f8f9fa;border-bottom:1px solid #e9ecef}
+  .electeurs-toolbar .form-select,.electeurs-toolbar .form-control{font-size:13px}
+  .electeurs-toolbar .btn{font-size:13px}
+  .privacy-banner{background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:8px}
+  #electeursWrap{padding:14px}
+  #electeursTable{font-size:12px;width:100%!important}
+  #electeursTable th{background:#343a40;color:#fff;font-weight:600;white-space:nowrap;font-size:12px;vertical-align:middle}
+  #electeursTable thead th[data-ar]:after{content:attr(data-ar);display:block;font-size:11px;color:#ffc107;font-weight:400;direction:rtl;margin-top:2px}
+  #electeursTable td{direction:rtl;text-align:right}
+  #electeursTable td:first-child,#electeursTable td:nth-child(2){direction:ltr;text-align:left}
+  #electeursTable td:nth-child(8){direction:ltr;text-align:center}
+  .electeurs-toolbar .filter-group{display:flex;align-items:center;gap:6px}
+  .electeurs-toolbar label{font-size:12px;color:#495057;margin:0;font-weight:600}
+
   @media (max-width: 900px){
     .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:1050;transform:translateX(-100%);transition:transform .25s;flex-basis:250px;width:250px}
     .sidebar.show{transform:none}
@@ -118,6 +133,7 @@
         <li><a class="nav-link active" href="#electorale"><i class="bi bi-map"></i><span>Carte Électorale</span></a></li>
         <li><a class="nav-link" href="#stats"><i class="bi bi-bar-chart-fill"></i><span>Statistiques</span><span class="badge bg-info">live</span></a></li>
         <li><a class="nav-link" href="#matrix"><i class="bi bi-grid-3x3"></i><span>Matrice BV</span></a></li>
+        <li><a class="nav-link" href="#electeurs"><i class="bi bi-person-vcard"></i><span>Liste électeurs</span><span class="badge bg-danger">local</span></a></li>
         <li class="nav-header">DONNÉES</li>
         <li><a class="nav-link" href="#communes"><i class="bi bi-buildings"></i><span>Communes</span><span class="badge bg-secondary">13</span></a></li>
         <li><a class="nav-link" href="#bureaux"><i class="bi bi-building-check"></i><span>Bureaux de vote</span><span class="badge bg-warning text-dark">245</span></a></li>
@@ -194,6 +210,66 @@
           </div>
           <div class="card-body">
             <iframe id="moduleFrame" title="Carte électorale" src="modules/electorale/index.html"></iframe>
+          </div>
+        </div>
+
+        <!-- Liste électeurs - Base locale sensible -->
+        <div class="card-alte" id="electeurs">
+          <div class="card-header">
+            <i class="bi bi-person-vcard-fill"></i>
+            <h3>Liste des Électeurs — قائمة الناخبين</h3>
+            <span class="badge bg-danger ms-auto"><i class="bi bi-shield-lock"></i> Données locales</span>
+          </div>
+          <div class="privacy-banner">
+            <i class="bi bi-info-circle-fill"></i>
+            Données sensibles — stockées uniquement sur cet appareil (localStorage du navigateur). Jamais envoyées au serveur.
+            <span class="ms-auto">Total : <b id="kpiElecteursCount">0</b></span>
+          </div>
+          <div class="electeurs-toolbar">
+            <div class="filter-group">
+              <label>Commune</label>
+              <select id="fCommune" class="form-select form-select-sm" style="min-width:160px"></select>
+            </div>
+            <div class="filter-group">
+              <label>Circonscription</label>
+              <select id="fCirc" class="form-select form-select-sm" style="min-width:130px"></select>
+            </div>
+            <div class="filter-group">
+              <label>Sexe</label>
+              <select id="fSexe" class="form-select form-select-sm" style="min-width:100px"></select>
+            </div>
+            <div class="filter-group">
+              <label>Bureau de vote</label>
+              <select id="fBV" class="form-select form-select-sm" style="min-width:160px"></select>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" id="fReset"><i class="bi bi-x-circle"></i> Réinitialiser</button>
+            <div class="ms-auto d-flex gap-2">
+              <input type="file" id="importFile" accept=".json,.csv,.tsv,.txt" hidden>
+              <button class="btn btn-sm btn-primary" id="importBtn"><i class="bi bi-upload"></i> Importer (JSON/CSV)</button>
+              <button class="btn btn-sm btn-success" id="exportBtn"><i class="bi bi-download"></i> Exporter</button>
+              <button class="btn btn-sm btn-outline-danger" id="clearBtn"><i class="bi bi-trash"></i> Vider</button>
+            </div>
+          </div>
+          <div id="electeursWrap">
+            <table id="electeursTable" class="display nowrap table table-striped table-hover" style="width:100%">
+              <thead>
+                <tr>
+                  <th data-ar="الرقم الترتيبي">N°</th>
+                  <th data-ar="رقم بطاقة التعريف">CIN</th>
+                  <th data-ar="الاسم الكامل">Nom complet</th>
+                  <th data-ar="الجنس">Sexe</th>
+                  <th data-ar="تاريخ الازدياد">Date naissance</th>
+                  <th data-ar="العنوان">Adresse</th>
+                  <th data-ar="الجماعة">Commune</th>
+                  <th data-ar="الدائرة">Circ.</th>
+                  <th data-ar="اسم مكتب التصويت">Bureau de vote</th>
+                  <th data-ar="عنوان مكتب التصويت">Adresse BV</th>
+                  <th data-ar="مكان مكتب التصويت">Lieu BV</th>
+                  <th data-ar="العمالة">Préfecture</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
 
@@ -307,5 +383,6 @@
       console.error(err);
     });
 </script>
+<script src="modules/electorale/js/electeurs.js"></script>
 </body>
 </html>
